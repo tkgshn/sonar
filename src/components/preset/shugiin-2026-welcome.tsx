@@ -182,7 +182,7 @@ export function Shugiin2026Welcome() {
           <div className="flex gap-8 text-sm">
             <div>
               <p className="text-gray-400 mb-1">所要時間</p>
-              <p className="text-gray-700">約15分</p>
+              <p className="text-gray-700">約10分</p>
             </div>
             <div>
               <p className="text-gray-400 mb-1">質問数</p>
