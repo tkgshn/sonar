@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SurveyReportView } from "./survey-report-view";
 
 interface SurveyReportInfo {
@@ -42,15 +42,20 @@ export function SurveyReportSection({
   responses,
   onReportGenerated,
 }: SurveyReportSectionProps) {
-  const latestCompletedReport = surveyReports.find(
-    (r) => r.status === "completed"
-  );
   const [generating, setGenerating] = useState(false);
   const [customInstructions, setCustomInstructions] = useState("");
-  const [expandedReportId, setExpandedReportId] = useState<string | null>(
-    latestCompletedReport?.id ?? null
-  );
+  const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-expand latest completed report when data arrives asynchronously
+  useEffect(() => {
+    if (expandedReportId === null && surveyReports.length > 0) {
+      const latest = surveyReports.find((r) => r.status === "completed");
+      if (latest) {
+        setExpandedReportId(latest.id);
+      }
+    }
+  }, [surveyReports, expandedReportId]);
 
   // Build participant data for citation lookup (sorted by created_at asc for stable user numbering)
   const sortedSessions = [...sessions].sort(
