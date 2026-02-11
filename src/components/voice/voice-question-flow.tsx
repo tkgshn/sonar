@@ -270,11 +270,11 @@ export function VoiceQuestionFlow({ sessionId }: VoiceQuestionFlowProps) {
             </p>
           </div>
 
-          {session && (
+          {session?.title && (
             <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left">
               <p className="text-xs text-gray-400 mb-1">テーマ</p>
               <p className="text-sm text-gray-700 leading-relaxed">
-                {session.purpose}
+                {session.title}
               </p>
             </div>
           )}
@@ -518,27 +518,10 @@ export function VoiceQuestionFlow({ sessionId }: VoiceQuestionFlowProps) {
                 </p>
               )}
 
-              {/* Answer hint chips */}
-              <div className="flex items-center gap-2 mb-8">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-500">
-                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  はい
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-500">
-                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  いいえ
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-500">
-                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  その他
-                </span>
-              </div>
+              {/* Answer guidance */}
+              <p className="text-sm text-gray-400 mb-8">
+                同意するなら「はい」、違うなら「いいえ」と答えてください。他に思うことがあれば自由にどうぞ。
+              </p>
 
               {/* Transcript display */}
               <div className="min-h-[80px] mb-8">
