@@ -49,7 +49,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
             &larr; ホームに戻る
           </Link>
           <h1 className="text-lg font-medium text-gray-900 line-clamp-2">
-            {session.purpose}
+            {session.title || session.purpose}
           </h1>
         </div>
 
