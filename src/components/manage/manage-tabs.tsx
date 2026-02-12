@@ -65,6 +65,7 @@ interface AdminData {
     title: string;
     purpose: string;
     created_at: string;
+    notification_email: string | null;
   };
   sessions: SessionInfo[];
   responses: ResponseInfo[];
@@ -394,6 +395,10 @@ export function ManageTabs({ token, userEmail, preset }: ManageTabsProps) {
           completedCount={completedSessions.length}
           onReportGenerated={handleSurveyReportGenerated}
           fixedQuestions={fixedQuestions}
+          presetSlug={preset.slug}
+          notificationEmail={data.preset.notification_email}
+          userEmail={userEmail}
+          onDataRefresh={() => fetchData(false)}
         />
       )}
 
@@ -769,23 +774,149 @@ function QuestionsEditTab({
 
 // --- 回答タブ ---
 
-type ResponseSubTab = "summary" | "questions" | "individual";
+type ResponseSubTab = "summary" | "individual";
 
-function ResponsesTab({ token, sessions, responses, reports, surveyReports, completedCount, onReportGenerated, fixedQuestions }: {
+function ResponsesTab({ token, sessions, responses, reports, surveyReports, completedCount, onReportGenerated, fixedQuestions, presetSlug, notificationEmail, userEmail, onDataRefresh }: {
   token: string; sessions: SessionInfo[]; responses: ResponseInfo[]; reports: ReportInfo[];
   surveyReports: SurveyReportInfo[]; completedCount: number; onReportGenerated: (report: SurveyReportInfo) => void;
   fixedQuestions: FixedQuestionInput[];
+  presetSlug: string;
+  notificationEmail: string | null;
+  userEmail: string | null;
+  onDataRefresh: () => void;
 }) {
   const [subTab, setSubTab] = useState<ResponseSubTab>("summary");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const handleCSVDownload = () => {
+    setMenuOpen(false);
+    downloadResponsesCSV(responses, presetSlug);
+  };
+
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/${token}/responses`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setShowDeleteDialog(false);
+      onDataRefresh();
+    } catch {
+      alert("削除に失敗しました");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleNotificationToggle = () => {
+    setMenuOpen(false);
+    if (notificationEmail) {
+      // Turn off: PATCH notification_email = null
+      fetch(`/api/admin/${token}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notification_email: null }),
+      }).then(() => onDataRefresh());
+    } else {
+      setShowEmailDialog(true);
+    }
+  };
+
+  const handleEmailSave = async (email: string) => {
+    const res = await fetch(`/api/admin/${token}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notification_email: email }),
+    });
+    if (res.ok) {
+      setShowEmailDialog(false);
+      onDataRefresh();
+    }
+  };
 
   const SUB_TABS: { id: ResponseSubTab; label: string }[] = [
     { id: "summary", label: "要約" },
-    { id: "questions", label: "質問" },
     { id: "individual", label: "個別" },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Responses header */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-gray-600">
+          <span className="text-2xl font-bold text-gray-900">{completedCount}</span>{" "}
+          件の回答
+        </p>
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="メニュー"
+          >
+            <svg className="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+              <circle cx="12" cy="19" r="1.5" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+              <button
+                type="button"
+                onClick={handleNotificationToggle}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                {notificationEmail ? (
+                  <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <span className="w-4 h-4" />
+                )}
+                メール通知を受け取る
+              </button>
+              <div className="border-t border-gray-100 my-1" />
+              <button
+                type="button"
+                onClick={handleCSVDownload}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                回答をダウンロード (.csv)
+              </button>
+              <div className="border-t border-gray-100 my-1" />
+              <button
+                type="button"
+                onClick={() => { setMenuOpen(false); setShowDeleteDialog(true); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>
+                すべての回答を削除
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Sub-tab bar */}
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
         {SUB_TABS.map((tab) => (
@@ -799,7 +930,6 @@ function ResponsesTab({ token, sessions, responses, reports, surveyReports, comp
       {subTab === "summary" && (
         <SummarySubTab
           token={token}
-          completedCount={completedCount}
           responses={responses}
           sessions={sessions}
           surveyReports={surveyReports}
@@ -808,12 +938,27 @@ function ResponsesTab({ token, sessions, responses, reports, surveyReports, comp
         />
       )}
 
-      {subTab === "questions" && (
-        <QuestionsSubTab responses={responses} />
-      )}
-
       {subTab === "individual" && (
         <IndividualSubTab sessions={sessions} responses={responses} reports={reports} />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {showDeleteDialog && (
+        <ConfirmDeleteDialog
+          count={completedCount}
+          deleting={deleting}
+          onConfirm={handleDeleteAll}
+          onCancel={() => setShowDeleteDialog(false)}
+        />
+      )}
+
+      {/* Email notification dialog */}
+      {showEmailDialog && (
+        <EmailNotificationDialog
+          defaultEmail={userEmail || ""}
+          onSave={handleEmailSave}
+          onCancel={() => setShowEmailDialog(false)}
+        />
       )}
     </div>
   );
@@ -821,8 +966,8 @@ function ResponsesTab({ token, sessions, responses, reports, surveyReports, comp
 
 // --- Summary Sub-tab ---
 
-function SummarySubTab({ token, completedCount, responses, sessions, surveyReports, onReportGenerated, fixedQuestions }: {
-  token: string; completedCount: number; responses: ResponseInfo[]; sessions: SessionInfo[];
+function SummarySubTab({ token, responses, sessions, surveyReports, onReportGenerated, fixedQuestions }: {
+  token: string; responses: ResponseInfo[]; sessions: SessionInfo[];
   surveyReports: SurveyReportInfo[]; onReportGenerated: (report: SurveyReportInfo) => void;
   fixedQuestions: FixedQuestionInput[];
 }) {
@@ -837,14 +982,6 @@ function SummarySubTab({ token, completedCount, responses, sessions, surveyRepor
 
   return (
     <div className="space-y-6">
-      {/* Total count */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="text-center">
-          <p className="text-3xl font-bold text-gray-900">{completedCount}</p>
-          <p className="text-sm text-gray-500">回答数</p>
-        </div>
-      </div>
-
       {/* Fixed question aggregations */}
       {fixedQuestions.length > 0 && questionGroups.size > 0 && (
         <div className="space-y-4">
@@ -1018,109 +1155,6 @@ function TextAnswersList({ responses }: { responses: ResponseInfo[] }) {
   );
 }
 
-// --- Questions Sub-tab ---
-
-function QuestionsSubTab({ responses }: { responses: ResponseInfo[] }) {
-  // Build unique questions list, grouped by source
-  const questionMap = new Map<string, { statement: string; source: string; questionType: string; options: string[]; scaleConfig: ResponseInfo["scale_config"]; responses: ResponseInfo[] }>();
-  for (const r of responses) {
-    const key = `${r.source}::${r.statement}`;
-    if (!questionMap.has(key)) {
-      questionMap.set(key, {
-        statement: r.statement,
-        source: r.source || "ai",
-        questionType: r.question_type || "radio",
-        options: r.options,
-        scaleConfig: r.scale_config,
-        responses: [],
-      });
-    }
-    questionMap.get(key)!.responses.push(r);
-  }
-  const allQuestions = Array.from(questionMap.values());
-  const fixedQs = allQuestions.filter((q) => q.source === "fixed");
-  const aiQs = allQuestions.filter((q) => q.source !== "fixed");
-
-  const [selectedKey, setSelectedKey] = useState<string>(allQuestions.length > 0 ? `${allQuestions[0].source}::${allQuestions[0].statement}` : "");
-  const selected = questionMap.get(selectedKey);
-
-  return (
-    <div className="space-y-4">
-      <select value={selectedKey} onChange={(e) => setSelectedKey(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        {fixedQs.length > 0 && (
-          <optgroup label="固定質問">
-            {fixedQs.map((q) => (
-              <option key={`fixed::${q.statement}`} value={`fixed::${q.statement}`}>
-                {q.statement} ({q.responses.length}件)
-              </option>
-            ))}
-          </optgroup>
-        )}
-        {aiQs.length > 0 && (
-          <optgroup label="AI質問">
-            {aiQs.map((q) => (
-              <option key={`ai::${q.statement}`} value={`ai::${q.statement}`}>
-                {q.statement} ({q.responses.length}件)
-              </option>
-            ))}
-          </optgroup>
-        )}
-      </select>
-
-      {selected && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-          <div>
-            <p className="text-sm font-medium text-gray-900">{selected.statement}</p>
-            <p className="text-xs text-gray-500 mt-1">{selected.responses.length}件の回答 / {selected.source === "fixed" ? "固定質問" : "AI質問"} / {questionTypeLabel(selected.questionType)}</p>
-          </div>
-
-          {selected.source !== "fixed" && (
-            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-              AI質問は回答者ごとに異なるため、集計結果は参考値です。
-            </p>
-          )}
-
-          {/* Aggregation */}
-          {(selected.questionType === "radio" || selected.questionType === "dropdown") && (
-            <BarChartAggregation responses={selected.responses} options={selected.options} />
-          )}
-          {selected.questionType === "checkbox" && (
-            <CheckboxAggregation responses={selected.responses} options={selected.options} />
-          )}
-          {selected.questionType === "scale" && (
-            <ScaleAggregation responses={selected.responses} scaleConfig={selected.scaleConfig} />
-          )}
-          {(selected.questionType === "text" || selected.questionType === "textarea") && (
-            <TextAnswersList responses={selected.responses} />
-          )}
-
-          {/* Individual answers list */}
-          <div>
-            <h4 className="text-xs font-medium text-gray-500 mb-2">個別回答</h4>
-            <div className="space-y-1.5 max-h-64 overflow-y-auto">
-              {selected.responses.map((r, i) => (
-                <div key={i} className="text-sm bg-gray-50 rounded-lg px-3 py-2">
-                  <span className="text-gray-900">{formatResponseText(r)}</span>
-                  {r.free_text && r.selected_option !== null && r.selected_option >= (r.options?.length || 0) && (
-                    <span className="text-gray-500 ml-1">({r.free_text})</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!selected && responses.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <p className="text-sm text-gray-500">まだ回答がありません。</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // --- Individual Sub-tab ---
 
 function IndividualSubTab({ sessions, responses, reports }: { sessions: SessionInfo[]; responses: ResponseInfo[]; reports: ReportInfo[] }) {
@@ -1271,6 +1305,113 @@ function SettingsEditTab({ reportTarget, setReportTarget, reportInstructions, se
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white" rows={3} />
         </div>
       </fieldset>
+    </div>
+  );
+}
+
+// --- CSV Download ---
+
+function downloadResponsesCSV(responses: ResponseInfo[], presetSlug: string) {
+  const BOM = "\uFEFF";
+  const header = ["session_id", "question_index", "statement", "source", "question_type", "selected_option_text", "free_text"];
+  const rows = responses.map((r) => [
+    r.session_id,
+    String(r.question_index),
+    r.statement,
+    r.source,
+    r.question_type || "radio",
+    formatResponseText(r),
+    r.free_text || "",
+  ]);
+
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${presetSlug}_responses_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// --- Confirm Delete Dialog ---
+
+function ConfirmDeleteDialog({ count, deleting, onConfirm, onCancel }: {
+  count: number; deleting: boolean; onConfirm: () => void; onCancel: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCancel}>
+      <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">すべての回答を削除</h3>
+        <p className="text-sm text-gray-600 mb-1">
+          {count}件の回答とレポートがすべて削除されます。
+        </p>
+        <p className="text-sm text-red-600 font-medium mb-6">
+          この操作は取り消せません。
+        </p>
+        <div className="flex gap-3 justify-end">
+          <button type="button" onClick={onCancel} disabled={deleting}
+            className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
+            キャンセル
+          </button>
+          <button type="button" onClick={onConfirm} disabled={deleting}
+            className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
+            {deleting ? "削除中..." : "削除する"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Email Notification Dialog ---
+
+function EmailNotificationDialog({ defaultEmail, onSave, onCancel }: {
+  defaultEmail: string; onSave: (email: string) => void; onCancel: () => void;
+}) {
+  const [email, setEmail] = useState(defaultEmail);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSaving(true);
+    await onSave(email.trim());
+    setSaving(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCancel}>
+      <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">メール通知設定</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          回答が完了するたびに通知メールを送信します。
+        </p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@example.com"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm mb-4"
+            required
+            autoFocus
+          />
+          <div className="flex gap-3 justify-end">
+            <button type="button" onClick={onCancel} disabled={saving}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50">
+              キャンセル
+            </button>
+            <button type="submit" disabled={saving || !email.trim()}
+              className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+              {saving ? "保存中..." : "保存"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -35,6 +35,7 @@ const updatePresetSchema = z.object({
     .min(5)
     .refine((v) => v % 5 === 0, { message: "回答数は5の倍数で指定してください" })
     .optional(),
+  notification_email: z.string().email().nullable().optional(),
 });
 
 export async function GET(
@@ -207,6 +208,8 @@ export async function PATCH(
       updateObj.fixed_questions = validated.fixed_questions;
     if (validated.report_target !== undefined)
       updateObj.report_target = validated.report_target;
+    if (validated.notification_email !== undefined)
+      updateObj.notification_email = validated.notification_email;
 
     if (Object.keys(updateObj).length === 0) {
       return NextResponse.json({ success: true });

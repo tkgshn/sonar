@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { callOpenRouter } from "@/lib/openrouter/client";
 import { buildReportPrompt } from "@/lib/openrouter/prompts";
 import { z } from "zod";
+import { sendCompletionNotification } from "@/lib/email/resend";
 
 const generateReportSchema = z.object({
   sessionId: z.string().uuid(),
@@ -27,6 +28,7 @@ interface SessionData {
   fixed_questions: Array<{ statement: string; detail: string; options: string[] }> | null;
   exploration_themes: string[] | null;
   status: string;
+  preset_id: string | null;
 }
 
 export async function POST(request: NextRequest) {
@@ -149,6 +151,36 @@ export async function POST(request: NextRequest) {
       .from("sessions")
       .update({ status: "completed" })
       .eq("id", sessionId);
+
+    // Send email notification (fire-and-forget)
+    if (session.preset_id) {
+      (async () => {
+        try {
+          const { data: presetData } = await supabase
+            .from("presets")
+            .select("notification_email, title, slug")
+            .eq("id", session.preset_id!)
+            .single();
+
+          if (presetData?.notification_email) {
+            const { count } = await supabase
+              .from("sessions")
+              .select("id", { count: "exact", head: true })
+              .eq("preset_id", session.preset_id!)
+              .eq("status", "completed");
+
+            await sendCompletionNotification({
+              to: presetData.notification_email,
+              presetTitle: presetData.title || "無題のアンケート",
+              presetSlug: presetData.slug,
+              sessionCount: count ?? 1,
+            });
+          }
+        } catch (err) {
+          console.error("Email notification error:", err);
+        }
+      })();
+    }
 
     return NextResponse.json({ report });
   } catch (error) {
