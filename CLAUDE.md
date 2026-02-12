@@ -97,10 +97,25 @@ Supabase PostgreSQL。マイグレーションは `supabase/migrations/` にあ�
 - `/report/[id]/print` で印刷用プレビュー（@media print対応）
 - 音声入力モード（Deepgram STT）対応
 
+### Authentication (Issue #18+)
+
+Supabase Auth マジックリンク認証。`@supabase/ssr` 0.8+ の PKCE フローを使用。
+
+| ファイル | 役割 |
+|---------|------|
+| `src/lib/supabase/server.ts` | Server Client（getAll/setAll パターン） |
+| `src/lib/supabase/client.ts` | Browser Client（変更不要） |
+| `src/middleware.ts` | セッションリフレッシュ専用（リダイレクトなし） |
+| `src/app/auth/confirm/route.ts` | コールバック（PKCE `code` + legacy `token_hash` 両対応） |
+| `src/app/auth/signout/route.ts` | POST でサインアウト |
+| `src/app/login/page.tsx` | マジックリンク送信フォーム |
+
+**重要**: Supabase のマジックリンクは**デフォルトで PKCE フロー**。コールバックには `?code=...` が来る。`exchangeCodeForSession(code)` で処理すること。`token_hash` + `type` だけ期待すると認証が常に失敗する。
+
 ## Conventions
 
 - ユーザー向けエラーメッセージは**日本語**
 - 質問番号は1-indexed（Q1, Q2, ...）
 - レポート内の引用は `[Q番号]` 形式、集約レポートは `[U1-Q12]` 形式
 - DB: snake_case、TypeScript: PascalCase（型）/ camelCase（変数）
-- 認証なし。セッションIDベースのアクセス、管理者はadmin_tokenベース
+- 認証: Supabase Auth マジックリンク（PKCE フロー）。未ログインでも既存機能は使える
