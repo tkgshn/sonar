@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PdfUpload } from "./pdf-upload";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ChevronRight } from "lucide-react";
 
 export function SessionForm() {
   const router = useRouter();
@@ -63,36 +67,30 @@ export function SessionForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label
-          htmlFor="purpose"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <Label htmlFor="purpose">
           明確にしたいこと・言語化したいこと
-        </label>
+        </Label>
         <textarea
           id="purpose"
           value={purpose}
           onChange={(e) => setPurpose(e.target.value)}
           placeholder="例：転職を考えているが、自分が本当に求めている働き方を整理したい"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent resize-none bg-background"
           rows={3}
           required
         />
       </div>
 
       <div>
-        <label
-          htmlFor="background"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <Label htmlFor="background">
           背景情報（任意）
-        </label>
+        </Label>
         <textarea
           id="background"
           value={backgroundText}
           onChange={(e) => setBackgroundText(e.target.value)}
           placeholder="関連する情報や文脈があれば入力してください"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent resize-none bg-background"
           rows={6}
         />
       </div>
@@ -103,16 +101,11 @@ export function SessionForm() {
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <svg
+          <ChevronRight
             className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-90" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          />
           詳細設定
         </button>
       </div>
@@ -120,20 +113,17 @@ export function SessionForm() {
       {showAdvanced && (
         <div className="space-y-6">
           <div>
-            <label
-              htmlFor="reportTarget"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <Label htmlFor="reportTarget">
               回答数
-            </label>
-            <p className="text-xs text-gray-500 mb-2">
+            </Label>
+            <p className="text-xs text-muted-foreground mb-2">
               何問回答したらレポートを生成するかを設定します。
             </p>
             <select
               id="reportTarget"
               value={reportTarget}
               onChange={(e) => setReportTarget(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+              className="w-full px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background"
             >
               {Array.from({ length: 19 }, (_, i) => (i + 1) * 5).map((n) => (
                 <option key={n} value={n}>
@@ -146,18 +136,18 @@ export function SessionForm() {
       )}
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting || !purpose.trim()}
-        className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3"
       >
         {isSubmitting ? "セッションを作成中..." : "セッションを開始する"}
-      </button>
+      </Button>
     </form>
   );
 }

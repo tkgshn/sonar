@@ -8,9 +8,12 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
+  const authError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(
+    authError === "auth" ? "認証に失敗しました。もう一度お試しください。" : ""
+  );
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
