@@ -275,7 +275,7 @@ export function AdminDashboard({ token }: { token: string }) {
                                     Q{r.question_index}. {r.statement}
                                   </p>
                                   <p className="text-gray-900">
-                                    {r.selected_option === 6 && r.free_text
+                                    {r.selected_option >= r.options.length && r.free_text
                                       ? r.free_text
                                       : r.options[r.selected_option] ??
                                         `選択肢 ${r.selected_option}`}

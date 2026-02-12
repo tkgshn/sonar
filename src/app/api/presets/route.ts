@@ -3,12 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { randomBytes } from "crypto";
 
+const fixedQuestionSchema = z.object({
+  statement: z.string().min(1).max(500),
+  detail: z.string().max(1000),
+  options: z.array(z.string().max(200)).min(2).max(10),
+});
+
 const createPresetSchema = z.object({
   title: z.string().min(1, "タイトルを入力してください").max(200),
   purpose: z.string().min(1, "目的を入力してください").max(5000),
   backgroundText: z.string().max(50000).optional(),
   reportInstructions: z.string().max(10000).optional(),
   keyQuestions: z.array(z.string().max(500)).max(20).optional(),
+  fixedQuestions: z.array(fixedQuestionSchema).max(50).optional(),
+  explorationThemes: z.array(z.string().max(500)).max(20).optional(),
   reportTarget: z.number().int().min(5).refine((v) => v % 5 === 0, {
     message: "回答数は5の倍数で指定してください",
   }).optional(),
@@ -32,6 +40,10 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // Backward compat: if only keyQuestions provided, use as explorationThemes
+    const explorationThemes = validated.explorationThemes
+      ?? (validated.keyQuestions && validated.keyQuestions.length > 0 ? validated.keyQuestions : []);
+
     // Build RPC params — only include p_user_id if user is authenticated
     // This ensures backward compatibility before migration 012 is applied
     const rpcParams: Record<string, unknown> = {
@@ -44,6 +56,8 @@ export async function POST(request: NextRequest) {
       p_og_description: validated.ogDescription || null,
       p_key_questions: validated.keyQuestions || [],
       p_report_target: validated.reportTarget || 25,
+      p_fixed_questions: validated.fixedQuestions || [],
+      p_exploration_themes: explorationThemes,
     };
 
     // Try with p_user_id first, fall back without it if function doesn't support it yet

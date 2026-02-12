@@ -12,6 +12,7 @@ interface QuestionCardProps {
   freeText: string | null;
   onSelect: (optionIndex: number, freeText?: string | null) => void;
   isLoading?: boolean;
+  source?: "ai" | "fixed";
 }
 
 type MainAnswer = "yes" | "unknown" | "no" | "neither" | null;
@@ -27,7 +28,10 @@ export function QuestionCard({
   freeText,
   onSelect,
   isLoading = false,
+  source,
 }: QuestionCardProps) {
+  // Fixed questions use a flat option list (no yes/no/neither structure)
+  const isFixedQuestion = source === "fixed";
   // Determine main answer from selectedOption
   const getMainAnswerFromOption = (option: number | null): MainAnswer => {
     if (option === null) return null;
@@ -108,8 +112,61 @@ export function QuestionCard({
         </div>
       </div>
 
-      {/* Main answer buttons */}
+      {/* Options */}
       <div className="sm:ml-[52px] space-y-3">
+        {isFixedQuestion ? (
+          /* Fixed question: flat list of all options */
+          <div className="space-y-2">
+            {options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (isLoading) return;
+                  onSelect(index, null);
+                }}
+                disabled={isLoading}
+                className={cn(
+                  "w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-200",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                  selectedOption === index
+                    ? "border-blue-500 bg-blue-50 text-blue-800 shadow-sm"
+                    : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300",
+                  isLoading && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                      selectedOption === index
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300 bg-white"
+                    )}
+                  >
+                    {selectedOption === index && (
+                      <svg
+                        className="w-3.5 h-3.5 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="text-sm">{option}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          /* AI question: yes/no/neither structure */
+          <>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           {/* はい (Yes) */}
           <button
@@ -379,6 +436,8 @@ export function QuestionCard({
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

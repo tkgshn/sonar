@@ -22,6 +22,8 @@ interface SessionData {
   background_text: string | null;
   report_instructions: string | null;
   key_questions: string[] | null;
+  fixed_questions: Array<{ statement: string; detail: string; options: string[] }> | null;
+  exploration_themes: string[] | null;
   status: string;
 }
 
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
       .eq("session_id", sessionId)
       .order("question_index", { ascending: true });
 
-    const allQA = ((questions as QuestionWithAnswer[]) || [])
+    const allQA = ((questions as (QuestionWithAnswer & { source?: string })[]) || [])
       .filter((q) => q.answers && q.answers.length > 0)
       .map((q) => ({
         index: q.question_index,
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
         options: q.options as string[],
         selectedOption: q.answers![0].selected_option,
         freeText: q.answers![0].free_text ?? null,
+        source: (q.source === "fixed" ? "fixed" : "ai") as "ai" | "fixed",
       }));
 
     if (allQA.length < 5) {
@@ -96,12 +99,16 @@ export async function POST(request: NextRequest) {
         : 1;
 
     // Generate report
-    const keyQuestions = Array.isArray(session.key_questions) ? session.key_questions : [];
+    const explorationThemes = Array.isArray(session.exploration_themes) && session.exploration_themes.length > 0
+      ? session.exploration_themes as string[]
+      : Array.isArray(session.key_questions) ? session.key_questions as string[] : [];
+    const fixedQuestions = Array.isArray(session.fixed_questions) ? session.fixed_questions as Array<{ statement: string; detail: string }> : [];
     const prompt = buildReportPrompt({
       purpose: session.purpose,
       backgroundText: session.background_text || "",
       reportInstructions: session.report_instructions || undefined,
-      keyQuestions: keyQuestions.length > 0 ? keyQuestions : undefined,
+      explorationThemes: explorationThemes.length > 0 ? explorationThemes : undefined,
+      fixedQuestions: fixedQuestions.length > 0 ? fixedQuestions : undefined,
       allQA,
       allAnalyses: analyses.map((a) => a.analysis_text),
       version: newVersion,

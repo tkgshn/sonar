@@ -16,6 +16,8 @@ export interface Database {
           purpose: string;
           background_text: string | null;
           report_instructions: string | null;
+          fixed_questions: Json;
+          exploration_themes: Json;
           phase_profile: Json;
           status: "active" | "completed" | "paused";
           current_question_index: number;
@@ -28,6 +30,8 @@ export interface Database {
           purpose: string;
           background_text?: string | null;
           report_instructions?: string | null;
+          fixed_questions?: Json;
+          exploration_themes?: Json;
           phase_profile?: Json;
           status?: "active" | "completed" | "paused";
           current_question_index?: number;
@@ -40,6 +44,8 @@ export interface Database {
           purpose?: string;
           background_text?: string | null;
           report_instructions?: string | null;
+          fixed_questions?: Json;
+          exploration_themes?: Json;
           phase_profile?: Json;
           status?: "active" | "completed" | "paused";
           current_question_index?: number;
@@ -56,6 +62,7 @@ export interface Database {
           detail: string | null;
           options: Json;
           phase: "exploration" | "deep-dive";
+          source: string | null;
           created_at: string;
         };
         Insert: {
@@ -66,6 +73,7 @@ export interface Database {
           detail?: string | null;
           options: Json;
           phase: "exploration" | "deep-dive";
+          source?: string | null;
           created_at?: string;
         };
         Update: {
@@ -76,6 +84,7 @@ export interface Database {
           detail?: string | null;
           options?: Json;
           phase?: "exploration" | "deep-dive";
+          source?: string | null;
           created_at?: string;
         };
       };

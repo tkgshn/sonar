@@ -3,12 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { generatePhaseProfile, DEFAULT_REPORT_TARGET } from "@/lib/utils/phase";
 
+const fixedQuestionSchema = z.object({
+  statement: z.string().min(1).max(500),
+  detail: z.string().max(1000),
+  options: z.array(z.string().max(200)).min(2).max(10),
+});
+
 const createSessionSchema = z.object({
   purpose: z.string().min(1, "目的を入力してください").max(5000),
   backgroundText: z.string().max(50000).optional(),
   title: z.string().max(100).optional(),
   reportInstructions: z.string().max(10000).optional(),
   keyQuestions: z.array(z.string().max(500)).max(20).optional(),
+  fixedQuestions: z.array(fixedQuestionSchema).max(50).optional(),
+  explorationThemes: z.array(z.string().max(500)).max(20).optional(),
   presetId: z.string().uuid().optional(),
   reportTarget: z.number().int().min(5).refine((v) => v % 5 === 0, {
     message: "回答数は5の倍数で指定してください",
@@ -24,6 +32,10 @@ export async function POST(request: NextRequest) {
 
     const reportTarget = validated.reportTarget || DEFAULT_REPORT_TARGET;
 
+    // Backward compat: if only keyQuestions provided, use as explorationThemes
+    const explorationThemes = validated.explorationThemes
+      ?? (validated.keyQuestions && validated.keyQuestions.length > 0 ? validated.keyQuestions : []);
+
     const { data, error } = await supabase
       .from("sessions")
       .insert({
@@ -31,6 +43,8 @@ export async function POST(request: NextRequest) {
         background_text: validated.backgroundText || null,
         report_instructions: validated.reportInstructions || null,
         key_questions: validated.keyQuestions || [],
+        fixed_questions: validated.fixedQuestions || [],
+        exploration_themes: explorationThemes,
         title: validated.title || validated.purpose.slice(0, 50),
         phase_profile: generatePhaseProfile(reportTarget),
         report_target: reportTarget,

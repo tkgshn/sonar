@@ -338,6 +338,7 @@ export function QuestionFlow({
                         handleSelect(question.id, optionIndex, freeText)
                       }
                       isLoading={pendingAnswer?.questionId === question.id}
+                      source={question.source === "fixed" ? "fixed" : "ai"}
                     />
                   </div>
                 ))}

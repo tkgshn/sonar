@@ -1,3 +1,9 @@
+export interface FixedQuestion {
+  statement: string;
+  detail: string;
+  options: string[];
+}
+
 export interface Preset {
   id: string;
   slug: string;
@@ -6,6 +12,8 @@ export interface Preset {
   background_text: string | null;
   report_instructions: string | null;
   key_questions: string[];
+  fixed_questions: FixedQuestion[];
+  exploration_themes: string[];
   og_title: string | null;
   og_description: string | null;
   created_at: string;
@@ -18,6 +26,8 @@ export interface Session {
   purpose: string;
   background_text: string | null;
   report_instructions: string | null;
+  fixed_questions: FixedQuestion[];
+  exploration_themes: string[];
   phase_profile: PhaseProfile;
   status: "active" | "completed" | "paused";
   current_question_index: number;
@@ -43,6 +53,7 @@ export interface Question {
   detail: string | null;
   options: string[];
   phase: "exploration" | "deep-dive";
+  source?: "ai" | "fixed";
   created_at: string;
   selectedOption?: number | null;
   freeText?: string | null;
@@ -142,6 +153,8 @@ export interface CreatePresetRequest {
   backgroundText?: string;
   reportInstructions?: string;
   keyQuestions?: string[];
+  fixedQuestions?: FixedQuestion[];
+  explorationThemes?: string[];
   reportTarget?: number;
   ogTitle?: string;
   ogDescription?: string;
