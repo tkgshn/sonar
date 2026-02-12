@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { Fragment, useEffect, useRef, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QuestionCard } from "./question-card";
 import { QuestionSkeleton } from "./question-skeleton";
@@ -258,6 +258,12 @@ export function QuestionFlow({
     contentBlocks.push({ type: "report" as const, item: report });
   }
 
+  // Section divider: find the first AI question that follows any fixed question
+  const hasFixedQuestions = questions.some((q) => q.source === "fixed");
+  const firstAiQuestionIndex = hasFixedQuestions
+    ? questions.find((q) => q.source !== "fixed")?.question_index ?? -1
+    : -1;
+
   const showLoading =
     isLoading || (warmupStatus === "running" && questions.length === 0);
 
@@ -323,24 +329,41 @@ export function QuestionFlow({
             return (
               <div key={`questions-${blockIndex}`} className="space-y-4">
                 {block.items.map((question) => (
-                  <div
-                    key={question.id}
-                    id={`question-${question.question_index}`}
-                  >
-                    <QuestionCard
-                      questionIndex={question.question_index}
-                      statement={question.statement}
-                      detail={question.detail || ""}
-                      options={question.options as string[]}
-                      selectedOption={question.selectedOption}
-                      freeText={question.freeText ?? null}
-                      onSelect={(optionIndex, freeText) =>
-                        handleSelect(question.id, optionIndex, freeText)
-                      }
-                      isLoading={pendingAnswer?.questionId === question.id}
-                      source={question.source === "fixed" ? "fixed" : "ai"}
-                    />
-                  </div>
+                  <Fragment key={question.id}>
+                    {/* Section divider: fixed → AI transition */}
+                    {question.question_index === firstAiQuestionIndex && (
+                      <div className="relative py-4">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                          <div className="w-full border-t-2 border-gray-200" />
+                        </div>
+                        <div className="relative flex justify-start">
+                          <div className="bg-gray-50 pr-4">
+                            <p className="text-sm font-semibold text-gray-600">
+                              AIによる深掘り質問
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              あなたの回答をもとに質問を生成しています
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div id={`question-${question.question_index}`}>
+                      <QuestionCard
+                        questionIndex={question.question_index}
+                        statement={question.statement}
+                        detail={question.detail || ""}
+                        options={question.options as string[]}
+                        selectedOption={question.selectedOption}
+                        freeText={question.freeText ?? null}
+                        onSelect={(optionIndex, freeText) =>
+                          handleSelect(question.id, optionIndex, freeText)
+                        }
+                        isLoading={pendingAnswer?.questionId === question.id}
+                        source={question.source === "fixed" ? "fixed" : "ai"}
+                      />
+                    </div>
+                  </Fragment>
                 ))}
               </div>
             );

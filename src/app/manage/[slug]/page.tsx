@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ManageTabs } from "@/components/manage/manage-tabs";
-import { AppHeader } from "@/components/ui/app-header";
 
 export const metadata: Metadata = {
   title: "管理画面 - 倍速アンケート",
@@ -58,22 +57,17 @@ export default async function ManagePage({ params }: ManagePageProps) {
   const { data: preset } = await supabase
     .from("presets")
     .select(
-      "slug, title, purpose, background_text, report_instructions, report_target, key_questions"
+      "slug, title, purpose, background_text, report_instructions, report_target, key_questions, fixed_questions, exploration_themes"
     )
     .eq("slug", slug)
     .single();
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <AppHeader
-          backHref="/"
-          title={preset?.title ?? slug}
-          userEmail={user.email ?? null}
-        />
-
+      <div className="max-w-5xl mx-auto px-4 py-2">
         <ManageTabs
           token={adminToken}
+          userEmail={user.email ?? null}
           preset={{
             slug: preset?.slug ?? slug,
             title: preset?.title ?? "",
@@ -82,6 +76,8 @@ export default async function ManagePage({ params }: ManagePageProps) {
             report_instructions: preset?.report_instructions ?? null,
             report_target: preset?.report_target ?? 25,
             key_questions: (preset?.key_questions as string[]) ?? [],
+            fixed_questions: (preset?.fixed_questions as Array<{ statement: string; detail: string; options: string[] }>) ?? [],
+            exploration_themes: (preset?.exploration_themes as string[]) ?? [],
           }}
         />
       </div>

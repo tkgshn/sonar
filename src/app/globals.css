@@ -33,6 +33,35 @@
   --color-gray-700: #e2e8f0;
   --color-gray-800: #f1f5f9;
   --color-gray-900: #f8fafc;
+
+  /* Green palette (fieldset decorations) */
+  --color-green-50: #052e16;
+  --color-green-100: #14532d;
+  --color-green-200: #166534;
+  --color-green-700: #86efac;
+  --color-green-800: #bbf7d0;
+
+  /* Blue palette (fieldset decorations, tabs) */
+  --color-blue-50: #172554;
+  --color-blue-100: #1e3a5f;
+  --color-blue-200: #1e40af;
+  --color-blue-300: #2563eb;
+  --color-blue-700: #93c5fd;
+  --color-blue-800: #bfdbfe;
+
+  /* Purple palette (fieldset decorations) */
+  --color-purple-50: #2e1065;
+  --color-purple-100: #3b0764;
+  --color-purple-200: #581c87;
+  --color-purple-600: #c084fc;
+  --color-purple-700: #d8b4fe;
+  --color-purple-800: #e9d5ff;
+
+  /* Red palette (error states) */
+  --color-red-50: #450a0a;
+  --color-red-200: #991b1b;
+  --color-red-500: #f87171;
+  --color-red-700: #fca5a5;
 }
 
 body {
