@@ -10,7 +10,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://sonar-b-eight.vercel.app"
+    process.env.NEXT_PUBLIC_BASE_URL || "https://baisoku-survey.plural-reality.com"
   ),
   title: "倍速アンケート - AIとの対話で深い意見を素早く集める",
   description:

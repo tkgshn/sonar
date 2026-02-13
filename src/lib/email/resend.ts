@@ -5,7 +5,7 @@ const resend = process.env.RESEND_API_KEY
   : null;
 
 const fromEmail =
-  process.env.RESEND_FROM_EMAIL || "Sonar <onboarding@resend.dev>";
+  process.env.RESEND_FROM_EMAIL || "倍速アンケート <onboarding@resend.dev>";
 
 interface CompletionNotificationParams {
   to: string;
@@ -46,7 +46,7 @@ export async function sendCompletionNotification({
           管理画面を開く
         </a>
         <p style="color: #999; font-size: 12px; margin-top: 24px;">
-          このメールは Sonar の通知設定により送信されています。管理画面から通知をオフにできます。
+          このメールは倍速アンケートの通知設定により送信されています。管理画面から通知をオフにできます。
         </p>
       </div>
     `,
