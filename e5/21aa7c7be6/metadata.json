@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e521aa7c7be6",
+  "strategy": "manual-commit",
+  "branch": "develop",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".env.example",
+    "CLAUDE.md",
+    "README.md",
+    "next.config.ts",
+    "package.json",
+    "src/app/lp/page.tsx",
+    "src/components/ui/app-header.tsx",
+    "src/lib/email/resend.ts",
+    "src/lib/openrouter/client.ts",
+    "src/middleware.ts",
+    "supabase/config.toml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e5/21aa7c7be6/0/metadata.json",
+      "transcript": "/e5/21aa7c7be6/0/full.jsonl",
+      "context": "/e5/21aa7c7be6/0/context.md",
+      "content_hash": "/e5/21aa7c7be6/0/content_hash.txt",
+      "prompt": "/e5/21aa7c7be6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 53810,
+    "cache_read_tokens": 3041344,
+    "output_tokens": 9961,
+    "api_call_count": 46
+  }
+}
