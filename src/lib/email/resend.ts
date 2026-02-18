@@ -27,7 +27,7 @@ export async function sendCompletionNotification({
     return;
   }
 
-  const manageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/preset/${presetSlug}`;
+  const manageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3939"}/preset/${presetSlug}`;
 
   await resend.emails.send({
     from: fromEmail,

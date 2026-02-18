@@ -17,45 +17,47 @@ export function AppHeader({
   userEmail,
 }: AppHeaderProps) {
   return (
-    <header className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3 min-w-0">
-        {backHref && (
-          <Link
-            href={backHref}
-            className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors shrink-0"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+    <header className="sticky top-0 z-50 -mx-4 mb-6 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 items-center justify-between px-4">
+        <div className="flex items-center gap-3 min-w-0">
+          {backHref && (
+            <Link
+              href={backHref}
+              className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors shrink-0"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </Link>
-        )}
-        {showLogo && <SonarLogo />}
-        {title && (
-          <h1 className="text-lg font-bold text-[var(--foreground)] truncate">{title}</h1>
-        )}
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <ThemeToggle />
-        {userEmail ? (
-          <AuthHeader email={userEmail} />
-        ) : (
-          <a
-            href="/login"
-            className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-          >
-            ログイン
-          </a>
-        )}
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </Link>
+          )}
+          {showLogo && <SonarLogo />}
+          {title && (
+            <h1 className="text-lg font-bold text-[var(--foreground)] truncate">{title}</h1>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggle />
+          {userEmail ? (
+            <AuthHeader email={userEmail} />
+          ) : (
+            <a
+              href="/login"
+              className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+            >
+              ログイン
+            </a>
+          )}
+        </div>
       </div>
     </header>
   );

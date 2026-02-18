@@ -68,7 +68,7 @@ function LPHeader() {
             ログイン
           </Link>
           <Link
-            href="/create"
+            href="/"
             className="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-all hover:shadow-lg hover:shadow-blue-600/20"
           >
             無料で始める
@@ -152,7 +152,7 @@ function HeroSection() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href="/create"
+                href="/"
                 className="inline-flex items-center justify-center px-6 py-3.5 rounded-lg bg-blue-600 text-white font-semibold text-base hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/25"
               >
                 無料で始める
@@ -1174,7 +1174,7 @@ function PricingSection() {
                 </div>
               </div>
               <Link
-                href="/create"
+                href="/"
                 className={`w-full py-3 px-4 rounded-lg font-medium text-sm text-center transition-all mb-6 block ${
                   plan.highlight
                     ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -1302,7 +1302,7 @@ function FinalCTA() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/create"
+            href="/"
             className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-white text-blue-700 font-bold text-base hover:bg-blue-50 transition-colors shadow-lg"
           >
             無料でアンケートを作成

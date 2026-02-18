@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import "./globals.css";
@@ -24,6 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
+      {process.env.NEXT_PUBLIC_UMAMI_URL && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+        <Script
+          defer
+          src={`${process.env.NEXT_PUBLIC_UMAMI_URL.replace(/\/$/, "")}/umami`}
+          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          strategy="afterInteractive"
+        />
+      )}
       <body className={`${geistSans.variable} antialiased`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

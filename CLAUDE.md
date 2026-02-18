@@ -38,7 +38,7 @@ npm run dev
 
 | ツール | URL | 用途 |
 |--------|-----|------|
-| Next.js App | http://localhost:3000 | メインアプリ |
+| Next.js App | http://localhost:3939 | メインアプリ |
 | Supabase Studio | http://127.0.0.1:54323 | DB管理・SQL実行 |
 | Mailpit | http://127.0.0.1:54324 | マジックリンクメール確認 |
 
@@ -79,7 +79,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase start の Publishable key>
 ## Commands
 
 ```bash
-npm run dev      # 開発サーバー起動 (http://localhost:3000)
+npm run dev      # 開発サーバー起動 (http://localhost:3939)
 npm run build    # プロダクションビルド
 npm run lint     # ESLint実行
 ```

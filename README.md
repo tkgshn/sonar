@@ -67,19 +67,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<上記の Publishable key>
 npm run dev
 ```
 
-http://localhost:3000 でアクセスできます。
+http://localhost:3939 でアクセスできます。
 
 ### ローカル開発で使えるツール
 
 | ツール | URL | 用途 |
 |--------|-----|------|
-| **Next.js App** | http://localhost:3000 | メインアプリケーション |
+| **Next.js App** | http://localhost:3939 | メインアプリケーション |
 | **Supabase Studio** | http://127.0.0.1:54323 | DB管理・テーブル閲覧・SQLエディタ |
 | **Mailpit** | http://127.0.0.1:54324 | マジックリンクメール確認 |
 
 ### マジックリンク認証のローカルテスト
 
-1. http://localhost:3000/login でメールアドレスを入力
+1. http://localhost:3939/login でメールアドレスを入力
 2. http://127.0.0.1:54324 (Mailpit) でマジックリンクメールを確認
 3. メール内のリンクをクリックしてログイン完了
 
@@ -115,7 +115,7 @@ Supabase が停止しています。`supabase start` で起動してください
 
 #### 認証コールバックで `/login?error=auth` にリダイレクトされる
 
-ローカル Supabase の `site_url` と Next.js のポートが一致しているか確認してください（デフォルト: `http://127.0.0.1:3000`）。
+ローカル Supabase の `site_url` と Next.js のポートが一致しているか確認してください（デフォルト: `http://localhost:3939`）。
 
 ## ブランチ戦略
 

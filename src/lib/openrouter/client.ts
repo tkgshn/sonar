@@ -42,7 +42,7 @@ export async function callOpenRouter(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+      "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3939",
       "X-Title": "Baisoku Survey",
     },
     body: JSON.stringify(payload),

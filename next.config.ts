@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/lp",
-        permanent: false,
+        source: "/lp",
+        destination: "https://plural-reality.com/solution/baisoku-survey",
+        permanent: true,
       },
     ];
   },
